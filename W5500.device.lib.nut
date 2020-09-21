@@ -2326,6 +2326,22 @@ class W5500.Connection {
                 } else {
                     // server.error("No timeout handler")
                 }
+
+                if( _driver.getSocketStatus(_socket) != W5500_SOCKET_STATUS_ESTABLISHED ) {
+                    _driver.clearSocketInterrupt(_socket, W5500_DISCONNECTED_INT_TYPE);
+                    skip_timer = true;
+
+                    // call disconnected callback
+                    local _disconnectCallback = _getHandler("disconnect");
+                    if (_disconnectCallback) {
+                        imp.wakeup(0, function() {
+                            _disconnectCallback(null);
+                        }.bindenv(this));
+                    }
+
+                    // Close the socket and remove interrupts
+                    close();
+                }
             }
         }
 
